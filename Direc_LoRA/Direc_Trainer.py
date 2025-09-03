@@ -9,7 +9,7 @@ class Direc_TrainingArguments(TrainingArguments):
 class Direc_Trainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
         # 首先调用父类的 compute_loss 获取原始任务损失
-        task_loss, outputs = super().compute_loss(model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch)
+        task_loss, outputs = super().compute_loss(model, inputs, return_outputs=True)
         
         # 计算正交约束损失
         ortho_loss = self.calc_ortho(model)

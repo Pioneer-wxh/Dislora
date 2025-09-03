@@ -20,6 +20,7 @@
 
 # 定义要运行的 GLUE 任务列表 (用空格分隔)
 # 可选项: "cola", "mnli", "mrpc", "qnli", "qqp", "rte", "sst2", "stsb", "wnli"
+export HF_ENDPOINT=https://hf-mirror.com
 TASKS=("cola" )
 
 # 定义要测试的 PEFT 方法列表 (用空格分隔)

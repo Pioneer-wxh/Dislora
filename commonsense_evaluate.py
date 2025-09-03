@@ -46,7 +46,7 @@ def main(
             max_new_tokens=32,
             **kwargs,
     ):
-        prompts = [generate_prompt(instruction, input[i] if input else None) for i, instruction in enumerate(instructions)]
+        prompts = [generate_prompt(instruction, input) for instruction in instructions]
         inputs = tokenizer(prompts, return_tensors="pt", padding=True)
         input_ids = inputs["input_ids"].to(device)
         generation_config = GenerationConfig(
@@ -141,12 +141,27 @@ def create_dir(dir_path):
     return
 
 
-def generate_prompt(instruction, input=None):
-    system = "Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n\n"
-    if input:
-        return f"<|im_start|>system\n{system}<|im_end|>\n<|im_start|>user\n{instruction}\n\n{input}<|im_end|>\n<|im_start|>assistant\n"
+def generate_prompt(data_point): #修改：生成提示词的模板
+    # sorry about the formatting disaster gotta move fast
+    if data_point["input"]:
+        return f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request. 
+
+                ### Instruction:
+                {data_point["instruction"]}
+                
+                ### Input:
+                {data_point["input"]}
+                
+                ### Response:
+                {data_point["output"]}""" # noqa: E501
     else:
-        return f"<|im_start|>system\n{system}<|im_end|>\n<|im_start|>user\n{instruction}<|im_end|>\n<|im_start|>assistant\n"
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.  
+
+                ### Instruction:
+                {data_point["instruction"]}
+                
+                ### Response:
+                {data_point["output"]}""" # noqa: E501
 
 
 def extract_response(output: str) -> str:
@@ -192,7 +207,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=["boolq", "piqa", "social_i_qa", "hellaswag", "winogrande", "ARC-Challenge", "ARC-Easy", "openbookqa"],
                         required=True)
-    parser.add_argument('--model', choices=['LLaMA-7B', "LLaMA-13B",'BLOOM-7B', 'GPT-j-6B', 'Qwen/Qwen2.5-7B-Instruct', 'Qwen/Qwen2.5-0.5B-Instruct'], required=True)
+    parser.add_argument('--model', choices=['LLaMA-7B', "LLaMA-13B",'BLOOM-7B', 'GPT-j-6B', 'Qwen2.5-7B-Instruct', 'Qwen2.5-0.5B-Instruct'], required=True)
     # 允许 mylora
     parser.add_argument('--adapter', choices=['LoRA', 'AdapterP', 'AdapterH', 'Parallel', 'mylora'],
                         required=True)

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from peft import LoraConfig
 from typing import Optional, Union, List
 
+
 @dataclass
 class Direc_config(LoraConfig):
     """
@@ -31,8 +32,10 @@ class Direc_config(LoraConfig):
             ),
         },
     )
-    lora_alpha: int = field(default=8, metadata={"help": "LoRA 缩放因子（scaling = lora_alpha / r）"})
-    lora_dropout: float = field(default=0.0, metadata={"help": "LoRA dropout 率"})
+    lora_alpha: int = field(default=8, metadata={
+                            "help": "LoRA 缩放因子（scaling = lora_alpha / r）"})
+    lora_dropout: float = field(default=0.0, metadata={
+                                "help": "LoRA dropout 率"})
     fan_in_fan_out: bool = field(
         default=False,
         metadata={"help": "如果要替换的层权重存储为 (fan_in, fan_out)，设置为 True"},

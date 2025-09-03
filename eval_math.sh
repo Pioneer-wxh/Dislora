@@ -1,21 +1,22 @@
 #!/bin/bash
 
-# 定义要测试的数据集列表
-datasets=('AddSub' 'MultiArith' 'SingleEq' 'gsm8k' 'AQuA' 'SVAMP')
 
-# 循环遍历数据集列表
+datasets=('AQuA')
+
+
 for dataset_name in "${datasets[@]}"
 do
   echo "======================================="
   echo "Running evaluation for dataset: $dataset_name"
   echo "======================================="
 
-  python evaluate.py \
+  CUDA_VISIBLE_DEVICES=$2 python math_evaluate.py \
+    --model Qwen2.5-7B-Instruct \
+    --adapter mylora \
     --dataset "$dataset_name" \
-    --model meta-llama/Meta-Llama-3-8B \
-    --adapter LoRA \
-    --base_model meta-llama/Meta-Llama-3-8B \
-    --lora_weights "./trained_models/qwen-lora-math_50k-lr3e-4-alpha24" \
+    --base_model 'Qwen/Qwen2.5-7B-Instruct' \
+    --batch_size 5 \
+    --lora_weights $1 | tee -a $1/${dataset_name}.txt
 
   echo "Finished evaluation for dataset: $dataset_name"
   echo ""

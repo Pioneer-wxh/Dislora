@@ -1,6 +1,7 @@
 import os
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 os.environ['TRANSFORMERS_CACHE'] = './model'
+os.environ["TOKENIZERS_PARALLELISM"] = "false"#修改
 import sys
 from typing import List
 
@@ -39,7 +40,7 @@ def train(
         val_set_size: int = 2000,
         use_gradient_checkpointing: bool = False,
         eval_step: int = 1000,
-        save_step: int = 1000,
+        save_step: int = 2000, # 多少步保存一次checkpoint
         # lora hyperparams
         lora_r: int = 8,
         lora_alpha: int = 16,
@@ -102,6 +103,7 @@ def train(
         f"ortho_lambda: {ortho_lambda}\n"
     )
     assert base_model, "Please specify a --base_model"
+    
     gradient_accumulation_steps = batch_size // micro_batch_size
 
     device_map = "auto"
@@ -133,7 +135,7 @@ def train(
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
             load_in_8bit=False,
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,#修改原来是bfloat16
             device_map={"": int(os.environ.get("LOCAL_RANK") or 0)},
             trust_remote_code=True,
         )
@@ -247,7 +249,7 @@ def train(
         model.to('cuda')
 
     if resume_from_checkpoint:
-        Ascendingly: checkpoint_name = os.path.join(resume_from_checkpoint, "pytorch_model.bin")
+        checkpoint_name = os.path.join(resume_from_checkpoint, "pytorch_model.bin")
         if not os.path.exists(checkpoint_name):
             checkpoint_name = os.path.join(resume_from_checkpoint, "adapter_model.bin")
             resume_from_checkpoint = False
@@ -288,14 +290,16 @@ def train(
             gradient_accumulation_steps=gradient_accumulation_steps,
             learning_rate=learning_rate,
             weight_decay=0.01,
-            bf16=True,
+            fp16=True,#修改原来是bf16=True
             eval_strategy="steps" if val_set_size > 0 else "no",
             save_strategy="steps",
             eval_steps=eval_step if val_set_size > 0 else None,
             save_steps=save_step,
             logging_steps=10,
-            save_total_limit=3,
+            save_total_limit=1,
             load_best_model_at_end=False,
+            # report_to=None,  # 禁用wandb
+            # run_name=None,   # 禁用wandb
             report_to="wandb" if use_wandb else None,
             run_name=wandb_run_name if use_wandb else None,
             deepspeed="ds_config.json",
@@ -316,7 +320,7 @@ def train(
             warmup_steps=100,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
-            bf16=True,
+            fp16=True,#修改bf16=True
             logging_steps=10,
             optim="adamw_torch",
             eval_strategy="steps" if val_set_size > 0 else "no",
@@ -324,10 +328,12 @@ def train(
             eval_steps=eval_step if val_set_size > 0 else None,
             save_steps=save_step,
             output_dir=output_dir,
-            save_total_limit=3,
+            save_total_limit=1,#checkpoint保存策略
             load_best_model_at_end=False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
+            # report_to=None,  # 禁用wandb
+            # run_name=None,   # 禁用wandb
             report_to="wandb" if use_wandb else None,
             run_name=wandb_run_name if use_wandb else None,
             deepspeed="ds_config.json"

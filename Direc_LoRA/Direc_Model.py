@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import os
 import logging
-from peft.tuners.lora.model import LoraModel
+from peft.tuners.lora import LoraModel
 from .Direc_layer import Direc_Linear
 from .Direc_config import Direc_config
 

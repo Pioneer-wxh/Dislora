@@ -1,6 +1,7 @@
 # 排除 model 文件夹
 model/
-
+trained_models/
+wandb/
 # Python 缓存文件
 __pycache__/
 *.py[cod]

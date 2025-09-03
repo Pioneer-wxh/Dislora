@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# 定义要尝试的学习率、lora_alpha 和 lora_r 值
+
 learning_rates=(3e-4)
 lora_alphas=(24 )
-lora_ranks=(16)  # 添加不同的 LoRA rank 值
+lora_ranks=(16) 
 
-# 基础模型和数据路径等固定参数
+
 BASE_MODEL='Qwen/Qwen2.5-7B-Instruct'
 DATA_PATH='/root/autodl-tmp/Dislora/commonsense_170k.json'
-# 从 DATA_PATH 提取数据集名称
+
 DATASET_NAME=$(basename "${DATA_PATH}" .json)
 
-BATCH_SIZE=12
+BATCH_SIZE=36
 MICRO_BATCH_SIZE=4
 NUM_EPOCHS=1
 CUTOFF_LEN=256
@@ -23,15 +23,15 @@ WANDB_PROJECT='llm-adapters-math'
 WANDB_WATCH='gradients'
 WANDB_LOG_MODEL='false'
 
-# 遍历所有学习率、lora_alpha 和 lora_r 的组合
+
 for lr in "${learning_rates[@]}"; do
   for alpha in "${lora_alphas[@]}"; do
     for rank in "${lora_ranks[@]}"; do
-      # 为每个组合生成独特的输出目录和 W&B 运行名称，包含数据集名称
+
       output_dir="./trained_models/qwen-lora-${DATASET_NAME}-lr${lr}-alpha${alpha}-rank${rank}-epoch3"
       wandb_run_name="qwen-lora-${DATASET_NAME}-lr${lr}-alpha${alpha}-rank${rank}"
       if [ -d "$output_dir" ]; then
-        echo "跳过已存在的训练组合: lr=${lr}, alpha=${alpha}, rank=${rank}"
+        echo "Skip the existing training combinations: lr=${lr}, alpha=${alpha}, rank=${rank}"
         continue
       fi
       echo "Running with dataset=${DATASET_NAME}, lr=${lr}, lora_alpha=${alpha}, lora_r=${rank}"
